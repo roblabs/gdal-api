@@ -41,15 +41,20 @@ Use NumPy to compute the sum of Floating point values in a GeoTIFF
 usage = '''
 Example,
   gdal_compute_sum.py -h
-  gdal_compute_sum.py ../tiff/MY1DMM_CHLORA_2002-07_rgb_720x360.FLOAT.tif
-  gdal_compute_sum.py -t 0.05 ../tiff/MY1DMM_CHLORA_2002-07_rgb_720x360.FLOAT.tif
-  gdal_compute_sum.py ../tiff/*.FLOAT.tif
+  gdal_compute_sum.py -j ../tiff/MY1DMM_CHLORA_2002-07_rgb_720x360.FLOAT.tif
+  gdal_compute_sum.py -j -t 0.05 ../tiff/MY1DMM_CHLORA_2002-07_rgb_720x360.FLOAT.tif
+  gdal_compute_sum.py -j ../tiff/*.FLOAT.tif
+  gdal_compute_sum.py -c ../tiff/*.FLOAT.tif
 
 '''
 
 parser = argparse.ArgumentParser(description=description, epilog = usage, formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument('-v', '--verbose', action='store_true', help='print extra information', required=False)
 parser.add_argument('-t', '--threshold', type=float, help='Sum data only less than threshold', required=False)
+group = parser.add_mutually_exclusive_group(required=True)
+group.add_argument('-c', '--csv', action='store_true', help='output as CSV', required=False)
+group.add_argument('-j', '--json', action='store_true', help='output as json', required=False)
+
 parser.add_argument('file', nargs='+')
 args = parser.parse_args()
 
@@ -96,8 +101,12 @@ if __name__ == '__main__':
       data = computeSumOnDataSet(datasetname, threshold)
 
       if( args.verbose):
-        print "%s = %f" % (fileName, data)
+        print "%s,%f" % (fileName, data)
+
+      if( args.csv):
+        print "%s,%f" % (fileName, data)
 
       jsonData['data'].append({ '%s' % fileName : data})
 
-  print  json.dumps(jsonData, separators=(',', ': '))
+  if( args.json):
+    print json.dumps(jsonData, separators=(',', ': '))
