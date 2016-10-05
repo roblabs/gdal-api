@@ -40,28 +40,20 @@ Use NumPy to compute the sum of Floating point values in a GeoTIFF
 usage = '''
 Example,
   gdal_compute_sum.py ../tiff/MY1DMM_CHLORA_2002-07_rgb_720x360.FLOAT.tif
+  gdal_compute_sum.py ../tiff/*.FLOAT.tif
 
 '''
 
 parser = argparse.ArgumentParser(description=description, epilog = usage, formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument('-t', '--threshold', help='Sum data only less than threshold', required=False)
-parser.add_argument('datasetname')
+parser.add_argument('file', nargs='+')
 args = parser.parse_args()
 
+THRESHOLD = 1.0
 
-if __name__ == '__main__':
-
-  if args.threshold is None:
-    threshold = 1.0
-
-  datasetname = gdal.Open( args.datasetname )
-  if datasetname is None:
-      print('Could not open %s' % args.datasetname)
-      sys.exit( 1 )
-
-
+def computeSumOnDataSet( dataset, threshold):
   # Read a single Gray scale band Floating Point TIFF into a NumPy Array
-  floatData = numpy.array(datasetname.GetRasterBand(1).ReadAsArray())
+  floatData = numpy.array(dataset.GetRasterBand(1).ReadAsArray())
 
   # convert to a mesh grid
   grid = numpy.meshgrid(floatData)
@@ -76,3 +68,18 @@ if __name__ == '__main__':
   # Create new array
   lowPlank = numpy.extract(boolThreshold, grid)
   print numpy.sum(lowPlank)
+
+
+if __name__ == '__main__':
+
+  if args.threshold is None:
+    threshold = THRESHOLD
+
+  for f in args.file:
+      print f
+      datasetname = gdal.Open( f )
+      if datasetname is None:
+          print('Could not open %s' % args.datasetname)
+          sys.exit( 1 )
+
+      computeSumOnDataSet(datasetname, threshold)
