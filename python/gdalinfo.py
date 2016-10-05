@@ -44,7 +44,7 @@ See this link if you need more than this Python wrapper
   http://www.gdal.org/gdalinfo.html
 
 Example,
-  gdalinfo.py input.tif
+  gdalinfo.py ../tiff/MY1DMM_CHLORA_2002-07.TIFF
 
 '''
 

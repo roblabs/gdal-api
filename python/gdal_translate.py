@@ -37,8 +37,8 @@ This is a Python wrapper of some of the options for http://www.gdal.org/gdal_tra
 This is not intended to replace gdal_translate, but to help you learn how Python bindings work with GDAL
 
 Example,
-  gdal_translate.py -of VRT input.tif output.vrt
-  gdal_translate.py -of PNG input.tif output.png
+  gdal_translate.py -of VRT ../tiff/MY1DMM_CHLORA_2002-07.TIFF  output.vrt
+  gdal_translate.py -of PNG ../tiff/MY1DMM_CHLORA_2002-07.TIFF  output.png
 
 '''
 
