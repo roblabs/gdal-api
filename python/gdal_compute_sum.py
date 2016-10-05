@@ -100,4 +100,4 @@ if __name__ == '__main__':
 
       jsonData['data'].append({ '%s' % fileName : data})
 
-  print jsonData
+  print  json.dumps(jsonData, separators=(',', ': '))
