@@ -32,6 +32,7 @@ from osgeo import gdal
 import numpy
 import argparse
 import sys
+import json
 
 description = '''
 Use NumPy to compute the sum of Floating point values in a GeoTIFF
@@ -39,13 +40,16 @@ Use NumPy to compute the sum of Floating point values in a GeoTIFF
 '''
 usage = '''
 Example,
+  gdal_compute_sum.py -h
   gdal_compute_sum.py ../tiff/MY1DMM_CHLORA_2002-07_rgb_720x360.FLOAT.tif
+  gdal_compute_sum.py -t 0.05 ../tiff/MY1DMM_CHLORA_2002-07_rgb_720x360.FLOAT.tif
   gdal_compute_sum.py ../tiff/*.FLOAT.tif
 
 '''
 
 parser = argparse.ArgumentParser(description=description, epilog = usage, formatter_class=argparse.RawTextHelpFormatter)
-parser.add_argument('-t', '--threshold', help='Sum data only less than threshold', required=False)
+parser.add_argument('-v', '--verbose', action='store_true', help='print extra information', required=False)
+parser.add_argument('-t', '--threshold', type=float, help='Sum data only less than threshold', required=False)
 parser.add_argument('file', nargs='+')
 args = parser.parse_args()
 
@@ -67,19 +71,33 @@ def computeSumOnDataSet( dataset, threshold):
 
   # Create new array
   lowPlank = numpy.extract(boolThreshold, grid)
-  print numpy.sum(lowPlank)
+  return numpy.sum(lowPlank)
 
 
 if __name__ == '__main__':
 
+  jsonData = { 'data' : []}
+
   if args.threshold is None:
     threshold = THRESHOLD
+  else:
+    threshold = args.threshold
 
   for f in args.file:
-      print f
+      # split the file name, and retrieve the last item
+      filePath = f.split('/')
+      fileName = filePath[ len(filePath) - 1]
+
       datasetname = gdal.Open( f )
       if datasetname is None:
           print('Could not open %s' % args.datasetname)
           sys.exit( 1 )
 
-      computeSumOnDataSet(datasetname, threshold)
+      data = computeSumOnDataSet(datasetname, threshold)
+
+      if( args.verbose):
+        print "%s = %f" % (fileName, data)
+
+      jsonData['data'].append({ '%s' % fileName : data})
+
+  print jsonData
