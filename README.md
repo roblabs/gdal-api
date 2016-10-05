@@ -11,3 +11,10 @@ Please see these excellent documents on Python Wrappers
 Examples in this repo
 * [gdal_translate.py](./python/gdal_translate.py)
 * [gdalinfo.py](./python/gdalinfo.py).  The version in this repo is very basic, and used for demo purposes.  Please see the more complete example from [OSGEO](http://svn.osgeo.org/gdal/trunk/gdal/swig/python/samples/gdalinfo.py)
+
+
+## GDAL API examples for Node.js
+
+Please see these excellent documents on Node Wrappers
+* [Node.js bindings for GDAL](https://github.com/naturalatlas/node-gdal) from [Natural Atlas](https://naturalatlas.com)
+* [gdalinfo.js](https://github.com/naturalatlas/node-gdal/blob/master/examples/gdalinfo.js)
