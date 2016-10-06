@@ -41,24 +41,29 @@ Use NumPy to compute the sum of Floating point values in a GeoTIFF
 usage = '''
 Example,
   gdal_compute_sum.py -h
-  gdal_compute_sum.py -j ../tiff/MY1DMM_CHLORA_2002-07_rgb_720x360.FLOAT.tif
-  gdal_compute_sum.py -j -t 0.05 ../tiff/MY1DMM_CHLORA_2002-07_rgb_720x360.FLOAT.tif
-  gdal_compute_sum.py -j ../tiff/*.FLOAT.tif
-  gdal_compute_sum.py -c ../tiff/*.FLOAT.tif
+
+  # JSON, single file
+  gdal_compute_sum.py -j -t 0.5 -f ../tiff/MY1DMM_CHLORA_2002-07_rgb_720x360.FLOAT.tif
+
+  # JSON, multiple files
+  gdal_compute_sum.py -j -t 0.5 -f ../tiff/*.FLOAT.tif
+
+  # CSV, multiple threshold, multiple files
+  gdal_compute_sum.py -c -t 0.2 0.5 1.0 99999.0 -f ../tiff/*.FLOAT.tif
+
 
 '''
 
 parser = argparse.ArgumentParser(description=description, epilog = usage, formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument('-v', '--verbose', action='store_true', help='print extra information', required=False)
-parser.add_argument('-t', '--threshold', type=float, help='Sum data only less than threshold', required=False)
+parser.add_argument('-t', '--threshold', nargs='+', type=float, help='Sum data only less than threshold', required=False)
 group = parser.add_mutually_exclusive_group(required=True)
 group.add_argument('-c', '--csv', action='store_true', help='output as CSV', required=False)
 group.add_argument('-j', '--json', action='store_true', help='output as json', required=False)
 
-parser.add_argument('file', nargs='+')
+parser.add_argument('-f', '--files', nargs='+')
 args = parser.parse_args()
 
-THRESHOLD = 1.0
 
 def computeSumOnDataSet( dataset, threshold):
   # Read a single Gray scale band Floating Point TIFF into a NumPy Array
@@ -83,12 +88,23 @@ if __name__ == '__main__':
 
   jsonData = { 'data' : []}
 
-  if args.threshold is None:
-    threshold = THRESHOLD
-  else:
-    threshold = args.threshold
+  if( args.csv):
+    # print header
+    header = "file"
 
-  for f in args.file:
+    for threshold in args.threshold:
+      header += ",< "
+      header += str(threshold)
+
+    print header
+
+
+  # if args.threshold is None:
+  #   threshold = THRESHOLD
+  # else:
+  #   threshold = args.threshold
+
+  for f in args.files:
       # split the file name, and retrieve the last item
       filePath = f.split('/')
       fileName = filePath[ len(filePath) - 1]
@@ -98,13 +114,21 @@ if __name__ == '__main__':
           print('Could not open %s' % args.datasetname)
           sys.exit( 1 )
 
-      data = computeSumOnDataSet(datasetname, threshold)
+      row = fileName
+      for threshold in args.threshold:
 
-      if( args.verbose):
-        print "%s,%f" % (fileName, data)
+        data = computeSumOnDataSet(datasetname, threshold)
 
+        # append data to row
+        if( args.csv):
+          # print row of data
+
+          row += ","
+          row += str(data)
+
+      # once out of the Threshold loop, then print the row
       if( args.csv):
-        print "%s,%f" % (fileName, data)
+        print row
 
       jsonData['data'].append({ '%s' % fileName : data})
 
