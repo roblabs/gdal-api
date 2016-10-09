@@ -64,13 +64,25 @@ group.add_argument('-j', '--json', action='store_true', help='output as json', r
 parser.add_argument('-f', '--files', nargs='+')
 args = parser.parse_args()
 
+NO_DATA = 99999.0
 
-def computeSumOnDataSet( dataset, threshold):
+def computeCountConcentration( dataNumpyArray):
   # Read a single Gray scale band Floating Point TIFF into a NumPy Array
-  floatData = numpy.array(dataset.GetRasterBand(1).ReadAsArray())
+
+  array = dataNumpyArray [ dataNumpyArray != NO_DATA]
+  return array.shape[0]
+
+def computeCountNoData( dataNumpyArray):
+  # Read a single Gray scale band Floating Point TIFF into a NumPy Array
+
+  array = dataNumpyArray [ dataNumpyArray == NO_DATA]
+  return array.shape[0]
+
+
+def computeSumWithThreshold( dataNumpyArray, threshold):
 
   # convert to a mesh grid
-  grid = numpy.meshgrid(floatData)
+  grid = numpy.meshgrid(dataNumpyArray)
 
   # Logical comparison
   #  1)  compute a boolean array of values less than the threshold
@@ -90,7 +102,7 @@ if __name__ == '__main__':
 
   if( args.csv):
     # print header
-    header = "file"
+    header = "file,concentration count, No Data count"
 
     for threshold in args.threshold:
       header += ",< "
@@ -114,10 +126,23 @@ if __name__ == '__main__':
           print('Could not open %s' % args.datasetname)
           sys.exit( 1 )
 
+      floatData = numpy.array(datasetname.GetRasterBand(1).ReadAsArray())
+
       row = fileName
+
+      countConcentration = computeCountConcentration( floatData)
+      countNoData = computeCountNoData( floatData)
+      # append data to row
+      if( args.csv):
+        row += ","
+        row += str(countConcentration)
+        row += ","
+        row += str(countNoData)
+
+
       for threshold in args.threshold:
 
-        data = computeSumOnDataSet(datasetname, threshold)
+        data = computeSumWithThreshold(floatData, threshold)
 
         # append data to row
         if( args.csv):
